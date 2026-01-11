@@ -1,0 +1,95 @@
+{
+  "project_info": {
+    "project_number": "777289691478",
+    "firebase_url": "https://radio-online-518b4.firebaseio.com",
+    "project_id": "radio-online-518b4",
+    "storage_bucket": "radio-online-518b4.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:777289691478:android:2009b1fd59fbb69f8766f7",
+        "android_client_info": {
+          "package_name": "com.wrteam.radioonline"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "777289691478-0fiptptp9idg8e9usent90kn8rqnd53e.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.wrteam.radioonline",
+            "certificate_hash": "027b32cbbe3c5ccfd15d7fc9731f632f12d7e2ff"
+          }
+        },
+        {
+          "client_id": "777289691478-75g9or4c8rl2vc664diub7l21mauojj0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.wrteam.radioonline",
+            "certificate_hash": "a2d18a9ae847d938c2a8ad265eb213e296d92004"
+          }
+        },
+        {
+          "client_id": "777289691478-iprsm3hf4s1q9dv0rm032mdlo0ihbl7v.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.wrteam.radioonline",
+            "certificate_hash": "032f07160b84da341d723a2621076d36ef03edc9"
+          }
+        },
+        {
+          "client_id": "777289691478-sdmq2o0dc2n9mp7m9mekkho367seu3jl.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.wrteam.radioonline",
+            "certificate_hash": "dfc11c2a02a949d08267dc16ed7f5341ec567813"
+          }
+        },
+        {
+          "client_id": "777289691478-u18jt1m5jggshh91lui6lk6uet0tqthv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.wrteam.radioonline",
+            "certificate_hash": "7c19fcb245bda3bceec86b0748dfe7b7e933ef0a"
+          }
+        },
+        {
+          "client_id": "777289691478-vq168omiblurp46o8vhmpgme1dhje42n.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.wrteam.radioonline",
+            "certificate_hash": "d27428c69bb95fb3241b41fc09406d5ba2d067cd"
+          }
+        },
+        {
+          "client_id": "777289691478-pas8a9fd75gur1bh9kar244837fn4cu8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": ""
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "777289691478-pas8a9fd75gur1bh9kar244837fn4cu8.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "777289691478-38va43b185hlossmvj6egd15mcio5am8.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.app.radioonline"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,1 @@
+const noInternet = 'no-internet';
