@@ -2,6 +2,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:radio_online/auth/widgets/auth_gate.dart';
 import 'package:radio_online/cubits/app/app_settings_cubit.dart';
 import 'package:radio_online/cubits/theme_mode/theme_mode_cubit.dart';
 import 'package:radio_online/cubits/translation/local_lang_cubit.dart';
@@ -82,7 +83,7 @@ class _RadioOnlineState extends State<RadioOnline> {
                             .toList(),
                         darkTheme: darkTheme,
                         themeMode: ThemeMode.light,
-                        home: const LandingScreen(),
+                        home: const AuthGate(child: LandingScreen()),
                         debugShowCheckedModeBanner: false,
                       );
                     },

@@ -5,6 +5,7 @@ import 'package:audio_session/audio_session.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:radio_online/auth/services/analytics_service.dart';
 import 'package:radio_online/cubits/player/player_cubit_state.dart';
 import 'package:radio_online/models/radio_station.dart';
 import 'package:radio_online/repository/radio_station_repo.dart';
@@ -23,6 +24,7 @@ class PlayerCubit extends Cubit<PlayerCubitState> {
   }
 
   late AudioPlayer _audioPlayer;
+  bool _isAudioPlayerInitialized = false;
   bool isConnectedCheck = true;
 
   bool isInitialPlayListLoaded = false;
@@ -38,6 +40,17 @@ class PlayerCubit extends Cubit<PlayerCubitState> {
   Timer? _retryTimer;
   int _retryCount = 0;
   bool _isRetrying = false;
+
+  // Analytics service for tracking listen events
+  final AnalyticsService _analytics = AnalyticsService.instance;
+
+  /// Track station change for analytics (ends previous session, starts new one)
+  Future<void> _trackStationStart(RadioStation station) async {
+    await _analytics.trackStationStart(
+      stationId: station.radioStationId,
+      stationName: station.radioStationName,
+    );
+  }
 
   // This ensures we don't create multiple AudioPlayer instances
   static Future<AudioPlayer> _getOrCreateAudioPlayer() async {
@@ -64,6 +77,18 @@ class PlayerCubit extends Cubit<PlayerCubitState> {
       handleInterruptions: true,
       androidApplyAudioAttributes: true,
       handleAudioSessionActivation: true,
+      // Reduced buffer for live streaming (default is 50 seconds)
+      audioLoadConfiguration: const AudioLoadConfiguration(
+        androidLoadControl: AndroidLoadControl(
+          minBufferDuration: Duration(seconds: 5),
+          maxBufferDuration: Duration(seconds: 10),
+          bufferForPlaybackDuration: Duration(seconds: 2),
+          bufferForPlaybackAfterRebufferDuration: Duration(seconds: 3),
+        ),
+        darwinLoadControl: DarwinLoadControl(
+          preferredForwardBufferDuration: Duration(seconds: 5),
+        ),
+      ),
     );
 
     return _sharedAudioPlayer!;
@@ -121,6 +146,7 @@ class PlayerCubit extends Cubit<PlayerCubitState> {
 
       // Create a new player
       _audioPlayer = await _getOrCreateAudioPlayer();
+      _isAudioPlayerInitialized = true;
 
       // Set up listeners
       _listenPlayerStateStream();
@@ -154,6 +180,7 @@ class PlayerCubit extends Cubit<PlayerCubitState> {
 
       // Use the singleton method to get/create the AudioPlayer
       _audioPlayer = await _getOrCreateAudioPlayer();
+      _isAudioPlayerInitialized = true;
 
       _handleInterruptions(_audioSession!);
       _monitorPlayerErrors();
@@ -183,6 +210,9 @@ class PlayerCubit extends Cubit<PlayerCubitState> {
 
   // Handle playback errors with automatic retry
   void _handlePlaybackError() {
+    // End current listen session on playback error
+    unawaited(_analytics.endCurrentListenSession());
+    
     if (_isRetrying) return;
     _isRetrying = true;
 
@@ -266,9 +296,11 @@ class PlayerCubit extends Cubit<PlayerCubitState> {
     });
 
     _audioPlayer.playingStream.listen((playing) {
+      print('DEBUG: playingStream emitted: $playing');
       playInterrupted = false;
       if (playing) {
         try {
+          print('DEBUG: Setting audio session active');
           audioSession.setActive(true);
         } catch (e) {
           print('Error setting audio session active: $e');
@@ -449,6 +481,7 @@ class PlayerCubit extends Cubit<PlayerCubitState> {
               await _audioPlayer.play();
 
               currentlyPlayingStation = stationToBePlayed;
+              unawaited(_trackStationStart(stationToBePlayed)); // Analytics
               emit(PlayingState());
             } catch (e) {
               print('Error seeking to station: $e');
@@ -500,6 +533,7 @@ class PlayerCubit extends Cubit<PlayerCubitState> {
           _listenPlayerStateStream();
           _listenSequenceStateStream();
 
+          unawaited(_trackStationStart(stationToBePlayed)); // Analytics
           emit(PlayingState());
         } catch (e) {
           print('Error setting audio source: $e');
@@ -561,6 +595,7 @@ class PlayerCubit extends Cubit<PlayerCubitState> {
           await _audioPlayer.play();
 
           currentlyPlayingStation = radioStationPlayList[nextIndex];
+          unawaited(_trackStationStart(currentlyPlayingStation!)); // Analytics
           emit(PlayingState());
         }
       } else {
@@ -611,6 +646,7 @@ class PlayerCubit extends Cubit<PlayerCubitState> {
           await _audioPlayer.play();
 
           currentlyPlayingStation = radioStationPlayList[prevIndex];
+          unawaited(_trackStationStart(currentlyPlayingStation!)); // Analytics
           emit(PlayingState());
         }
       } else {
@@ -630,8 +666,13 @@ class PlayerCubit extends Cubit<PlayerCubitState> {
   }
 
   Future<void> pauseRadio() async {
+    if (!_isAudioPlayerInitialized) return;
     try {
+      print('DEBUG: pauseRadio() called');
       await _audioPlayer.pause();
+      // End current listen session when pausing
+      print('DEBUG: Calling endCurrentListenSession from pauseRadio');
+      unawaited(_analytics.endCurrentListenSession());
       emit(StoppedState(isConnected: isConnectedCheck));
     } catch (e) {
       print('Error pausing radio: $e');
@@ -639,11 +680,16 @@ class PlayerCubit extends Cubit<PlayerCubitState> {
   }
 
   void resumeRadio() {
+    if (!_isAudioPlayerInitialized) return;
+    print('DEBUG: resumeRadio() called - station: ${currentlyPlayingStation?.radioStationName}, playing: ${_audioPlayer.playing}, connected: $isConnectedCheck');
     if (currentlyPlayingStation != null &&
         !_audioPlayer.playing &&
         isConnectedCheck) {
       try {
         resumeRadioWithRetry();
+        // Start new listen session when resuming
+        print('DEBUG: Calling _trackStationStart from resumeRadio');
+        unawaited(_trackStationStart(currentlyPlayingStation!));
       } catch (e) {
         print('Error resuming radio: $e');
         _handlePlaybackError();
@@ -686,6 +732,8 @@ class PlayerCubit extends Cubit<PlayerCubitState> {
           }
           emit(PlayingState());
         } else {
+          // Stream completed (AzuraCast timeout, stream ended, etc.)
+          unawaited(_analytics.endCurrentListenSession());
           emit(StoppedState(isConnected: isConnectedCheck));
         }
       } catch (error) {
@@ -717,6 +765,7 @@ class PlayerCubit extends Cubit<PlayerCubitState> {
 
               if (currentlyPlayingStation != musicData) {
                 currentlyPlayingStation = musicData;
+                unawaited(_trackStationStart(musicData)); // Analytics
                 emit(PlayingState());
               }
             } catch (e) {
@@ -733,6 +782,9 @@ class PlayerCubit extends Cubit<PlayerCubitState> {
   @override
   Future<void> close() async {
     try {
+      // End any active listen session for analytics
+      await _analytics.endCurrentListenSession();
+
       _retryTimer?.cancel();
       _connectivitySubscription?.cancel();
       _playerStateSubscription?.cancel();

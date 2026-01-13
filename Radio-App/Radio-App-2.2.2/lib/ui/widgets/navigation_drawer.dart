@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:radio_online/auth/services/auth_service.dart';
 import 'package:radio_online/cubits/landing_screen/landing_screen_cubit.dart';
 import 'package:radio_online/cubits/player/player_cubit.dart';
 import 'package:radio_online/ui/screens/favorite_screen.dart';
@@ -56,13 +57,14 @@ class _CustomNavigationDrawerState extends State<CustomNavigationDrawer> {
                   context.read<LandingScreenCubit>().loadHomeScreen();
                   Navigator.of(context).pop();
                 }),
-                listItem(
-                    AppLocalizations.getTranslatedLabel(context, 'category'),
-                    Icons.category,
-                    1, () {
-                  context.read<LandingScreenCubit>().loadCategoryScreen();
-                  Navigator.of(context).pop();
-                }),
+                // Category hidden - uncomment to restore
+                // listItem(
+                //     AppLocalizations.getTranslatedLabel(context, 'category'),
+                //     Icons.category,
+                //     1, () {
+                //   context.read<LandingScreenCubit>().loadCategoryScreen();
+                //   Navigator.of(context).pop();
+                // }),
                 if (AppInfo().cityMode)
                   listItem(AppLocalizations.getTranslatedLabel(context, 'city'),
                       Icons.location_city, 2, () {
@@ -98,38 +100,40 @@ class _CustomNavigationDrawerState extends State<CustomNavigationDrawer> {
                   Navigator.of(context).pop();
                   showLanguageModalBottomSheet(context, appLanguages);
                 }),
-                listItem(
-                    AppLocalizations.getTranslatedLabel(
-                      context,
-                      'privacy_policy',
-                    ),
-                    Icons.security,
-                    6, () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute<dynamic>(
-                      builder: (context) => const LegalInfoScreen(
-                        legalInfo: 'privacy_policy',
-                        screenTitle: 'Privacy Policy',
-                      ),
-                    ),
-                  );
-                }),
-                listItem(
-                    AppLocalizations.getTranslatedLabel(
-                      context,
-                      'terms_conditions',
-                    ),
-                    Icons.warning,
-                    7, () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute<dynamic>(
-                      builder: (context) => const LegalInfoScreen(
-                        legalInfo: 'terms_condition',
-                        screenTitle: 'Terms and Conditions',
-                      ),
-                    ),
-                  );
-                }),
+                // Privacy Policy hidden - uncomment to restore
+                // listItem(
+                //     AppLocalizations.getTranslatedLabel(
+                //       context,
+                //       'privacy_policy',
+                //     ),
+                //     Icons.security,
+                //     6, () {
+                //   Navigator.of(context).push(
+                //     MaterialPageRoute<dynamic>(
+                //       builder: (context) => const LegalInfoScreen(
+                //         legalInfo: 'privacy_policy',
+                //         screenTitle: 'Privacy Policy',
+                //       ),
+                //     ),
+                //   );
+                // }),
+                // Terms & Conditions hidden - uncomment to restore
+                // listItem(
+                //     AppLocalizations.getTranslatedLabel(
+                //       context,
+                //       'terms_conditions',
+                //     ),
+                //     Icons.warning,
+                //     7, () {
+                //   Navigator.of(context).push(
+                //     MaterialPageRoute<dynamic>(
+                //       builder: (context) => const LegalInfoScreen(
+                //         legalInfo: 'terms_condition',
+                //         screenTitle: 'Terms and Conditions',
+                //       ),
+                //     ),
+                //   );
+                // }),
                 listItem(
                     AppLocalizations.getTranslatedLabel(context, 'about_us'),
                     Icons.info,
@@ -152,6 +156,15 @@ class _CustomNavigationDrawerState extends State<CustomNavigationDrawer> {
                     Icons.star,
                     10, () {
                   launchUrl(Uri.parse(AppInfo().appLink));
+                }),
+                const Divider(),
+                listItem(
+                    AppLocalizations.getTranslatedLabel(context, 'logout'),
+                    Icons.logout,
+                    11, () async {
+                  Navigator.of(context).pop(); // Close drawer first
+                  await AuthService.instance.signOut();
+                  // AuthGate will automatically redirect to welcome screen
                 }),
               ],
             ),

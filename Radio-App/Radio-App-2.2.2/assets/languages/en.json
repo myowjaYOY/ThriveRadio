@@ -34,5 +34,6 @@
   "done": "Submit",
   "lang_selection": "Select Language",
   "update_app": "Update App",
-  "force_update": "Please update the app to continue using it."
+  "force_update": "Please update the app to continue using it.",
+  "logout": "Logout"
 }

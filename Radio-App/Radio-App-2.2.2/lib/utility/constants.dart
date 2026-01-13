@@ -14,7 +14,7 @@ const azuraCastApiUrl = '$azuraCastUrl/api';
 bool get isBackendConfigured => azuraCastUrl.isNotEmpty && azuraCastUrl != 'PLACE_YOUR_AZURACAST_URL_HERE';
 
 /// Fallbacks
-const kPrimaryColor = Color(0xffb0506a);
+const kPrimaryColor = Color(0xff7851A9); // Royal Purple
 const kPrimaryBackgroundColor = Color(0xffe7e4e4);
 const kFallbackImage = 'assets/images/placeholder.png';
 
